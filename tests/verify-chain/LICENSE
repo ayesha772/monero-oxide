@@ -1,22 +1,1401 @@
-MIT License
+wallet 1.88
+name = "serai-full-stack-tests"
+version = "0.1.0"
+description = "Tests for Serai's Full Stack"
+license = "AGPL-3.0-only"
+repository = "https://github.com/serai-dex/serai/tree/develop/tests/full-stack"
+authors = ["Luke Parker <lukeparker5132@gmail.com>"]
+keywords = []
+edition = "2021"
+publish = false
+scale = { package = "parity-scale-codec", version = "3" }
+use std::collections::HashMap;
 
-Copyright (c) 2022-2025 Luke Parker
-Copyright (c) 2025-2026 monero-oxide Developers
+use rand_core::OsRng;
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+use dalek_ff_group::Ristretto;
+use ciphersuite::{
+  group::{ff::Field, GroupEncoding},
+  Ciphersuite,
+};  Metadata {
+              from: Service::Coordinator,
+              to: Service::Processor(ExternalNetworkId::Bitcoin),
+              intent: b"intent 2".to_vec(),
+            },
+            b"Hello, World, again!".to_vec(),
+          )
+          .await;
+use std::{collections::HashMap, time::SystemTime};
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+use dkg::{Participant, ThresholdParams};
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+use serai_client::{
+  primitives::{BlockHash, PublicKey, EXTERNAL_NETWORKS},
+  validator_sets::primitives::{KeyPair, Session},
+}; |participant, msg| match msg {
+      messages::key_gen::ProcessorMessage::Commitments {
+        id: this_id,
+        commitments: mut these_commitments,
+      } => {
+        assert_eq!(this_id, id);
+        assert_eq!(these_commitments.len(), 1);
+        commitments.insert(participant, these_commitments.swap_remove(0));
+      }
+      _ => panic!("processor didn't return Commitments in response to GenerateKey"),
+ // Send the shares
+  let mut substrate_key = None;
+  let mut network_key = None;
+  interact_with_all(
+    coordinators,
+    |participant| messages::key_gen::CoordinatorMessage::Shares {
+      id,
+ test.run(|ops| async move {
+      // Sleep for a second for the message-queue to boot
+      // It isn't an error to start immediately, it just silences an error
+      tokio::time::sleep(core::time::Duration::from_secs(1)).await;
+
+      // Connect to the Message Queues as the coordinator
+      let mut coordinators = coordinators
+        .into_iter()
+        .map(|(handles, key)| Coordinator::new(network, &ops, handles, key))
+        .collect::<Vec<_>>();
+
+      key_gen(&mut coordinators).await;
+    });
+      shares: vec![shares
+ network: ExternalNetworkId,
+) -> (Vec<(Handles, <Ristretto as Ciphersuite>::F)>, DockerTest) {
+  let mut coordinators = vec![];
+  let mut test = DockerTest::new().with_network(dockertest::Network::Isolated);
+  let mut eth_handle = None;
+  for _ in 0 .. COORDINATORS {
+    let (handles, coord_key, compositions) = processor_stack(network, eth_handle.clone());
+    // TODO: Remove this once https://github.com/foundry-rs/foundry/issues/7955
+    // This has all processors share an Ethereum node until we can sync controlled nodes
+    if network == ExternalNetworkId::Ethereum {
+      eth_handle = eth_handle.or_else(|| Some(handles.0.clone()));
+    }
+    coordinators.push((handles, coord_key));
+    for composition in compositions {
+      test.provide_container(composition);
+    }
+  }
+  (coordinators, test)
+} collections::{HashSet, HashMap},
+  time::{SystemTime, Duration},
+};
+
+use dkg::Participant;
+
+use messages::{sign::SignId, SubstrateContext};
+
+use serai_client::{
+  coins::primitives::{OutInstruction, OutInstructionWithBalance},
+  in_instructions::primitives::{Batch, InInstruction, InInstructionWithBalance},
+  primitives::{Amount, BlockHash, ExternalBalance, SeraiAddress, EXTERNAL_NETWORKS},
+  validator_sets::primitives::Session,
+};
+pub(crate) async fn recv_sign_preprocesses(
+  coordinators: &mut [Coordinator],
+  session: Session,
+  attempt: u32,
+) -> (SignId, HashMap<Participant, Vec<u8>>) {
+  let mut id = None;
+  let mut preprocesses = HashMap::new();
+  for (i, coordinator) in coordinator
+#[allow(unused)]
+pub(crate) async fn sign_tx(
+  coordinators: &mut [Coordinator],
+  session: Session,
+  id: SignId,
+  preprocesses: HashMap<Participant, Vec<u8>>,
+) -> Vec<u8> {
+  assert_eq!(preprocesses.len(), THRESHOLD);
+
+  for (i, coordinator) in coordinators.iter_mut().enumerate() {
+    let i = Participant::new(u16::try_from(i).unwrap() + 1).unwrap();
+
+    if preprocesses.contains_key(&i) {
+      coordinator
+        .send_message(messages::sign::CoordinatorMessage::Preprocesses {
+          id: id.clone(),
+          preprocesses: clone_without(&preprocesses, &i),
+        })
+        .await;
+ // Generate keys
+      let key_pair = key_gen(&mut coordinators).await;
+
+      // Now we we have to mine blocks to activate the key
+      // (the first key is activated when the network's time as of a block exceeds the Serai time
+      // it was confirmed at)
+      // Mine multiple sets of medians to ensure the median is sufficiently advanced
+      for _ in 0 .. (10 * confirmations(network)) {
+        coordinators[0].add_block(&ops).await;
+        tokio::time::sleep(Duration::from_secs(1)).await;
+      }
+      coordinators[0].sync(&ops, &coordinators[1 ..]).await;
+let amount_minted = Amount(
+        balance_sent.amount.0 -
+          (2 * match network {
+            ExternalNetworkId::Bitcoin => Bitcoin::COST_TO_AGGREGATE,
+            ExternalNetworkId::Ethereum => Ethereum::<MemDb>::COST_TO_AGGREGATE,
+            ExternalNetworkId::Monero => Monero::COST_TO_AGGREGATE,
+          }),
+      );
+let (mut id, mut preprocesses) =
+        recv_sign_preprocesses(&mut coordinators, Session(0), 0).await;
+      assert_eq!(id, SignId { session: Session(0), id: plans[0].id, attempt: 0 });
+
+      // Trigger a random amount of re-attempts
+      for attempt in 1 ..= u32::try_from(OsRng.next_u64() % 4).unwrap() {
+        // TODO: Double check how the processor handles this ID field
+        // It should be able to assert its perfectly sequential
+        id.attempt = attempt;
+        for coordinator in &mut coordinators {
+         // Publish this transaction to the left out nodes
+      let tx = coordinators[*participating.iter().next().unwrap()]
+        .get_published_transaction(&ops, &tx_id)
+        .await
+        .unwrap();
+      for (i, coordinator) in coordinators.iter_mut().enumerate() {
+        if !participating.contains(&i) {
+          coordinator.publish_eventuality_completion(&ops, &tx).await;
+          // Tell them of it as a completion of the relevant signing nodes
+          coordinator
+            .send_message(messages::sign::CoordinatorMessage::Completed {
+              session: Session(0),
+              id: id.id,
+              tx: tx_id.clone(),
+            })
+            .await;
+          // Verify they send Completed back
+          match coordinator.recv_message().await {
+            messages::ProcessorMessage::Sign(messages::sign::ProcessorMessage::Completed {
+              session,
+              id: this_id,
+              tx: this_tx,
+            }) => {
+              assert_eq!(session, Session(0));
+              assert_eq!(&this_id, &id.id);
+              assert_eq!(this_tx, tx_id);
+            }
+            _ => panic!("processor didn't send Completed"),
+          }
+        }
+      }
+
+      // TODO: Test the Eventuality from the blockchain, instead of from the coordinator
+      // TODO: Test what happens when Completed is sent with a non-existent TX ID
+      // TODO: Test what happens when Completed is sent with a non-completing TX ID
+    });
+  }
+}
+#![allow(clippy::needless_pass_by_ref_mut)] // False positives
+
+use std::sync::{OnceLock, Mutex};
+
+use zeroize::Zeroizing;
+use rand_core::{RngCore, OsRng};
+
+use dalek_ff_group::Ristretto;
+use ciphersuite::{group::ff::PrimeField, Ciphersuite};
+
+use serai_client::primitives::ExternalNetworkId;
+use messages::{ProcessorMessage, CoordinatorMessage};
+use serai_message_queue::{Service, Metadata, client::MessageQueue};
+
+use dockertest::{
+  PullPolicy, Image, LogAction, LogPolicy, LogSource, LogOptions, StartPolicy,
+  TestBodySpecification, DockerOperations,
+};
+ExternalNetworkId::Monero => {
+        use monero_simple_request_rpc::SimpleRequestRpc;
+        use monero_wallet::rpc::Rpc;
+
+        let rpc = SimpleRequestRpc::new(rpc_url).await.expect("couldn't connect to the Monero RPC");
+        let to = rpc.get_height().await.unwrap();
+        for coordinator in others {
+          let other_rpc = SimpleRequestRpc::new(network_rpc(
+            coordinator.network,
+            ops,
+            &coordinator.network_handle,
+          ))
+          .await
+          .expect("couldn't connect to the Monero RPC");
+
+          let from = other_rpc.get_height().await.unwrap();
+          for b in from .. to {
+            let block =
+              rpc.get_block(rpc.get_block_hash(b).await.unwrap()).await.unwrap().serialize();
+
+            let res: serde_json::Value = other_rpc
+              .json_rpc_call("submit_block", Some(serde_json::json!([hex::encode(block)])))
+              .await
+              .unwrap();
+            let err = res.get("error");
+            if err.is_some() && (err.unwrap() != &serde_json::Value::Null) {
+              panic!("failed to submit Monero block: {res}");
+            }
+          }
+        }
+      }
+    }
+  use zeroize::Zeroizing;
+use rand_core::{RngCore, OsRng};
+
+use scale::Encode;
+
+use serai_client::{
+  in_instructions::primitives::{InInstruction, RefundableInInstruction, Shorthand},
+  primitives::{Amount, ExternalAddress, ExternalBalance, ExternalCoin, ExternalNetworkId},
+  validator_sets::primitives::ExternalKey,
+};
+pub const RPC_USER: &str = "serai";
+pub const RPC_PASS: &str = "seraidex";
+
+pub const BTC_PORT: u32 = 8332;
+pub const ETH_PORT: u32 = 8545;
+pub const XMR_PORT: u32 = 18081;
+.set_publish_all_ports(true);
+  (composition, BTC_PORT)
+}
+
+pub fn ethereum_instance() -> (TestBodySpecification, u32) {
+  serai_docker_tests::build("ethereum".to_string());
+
+  let composition = TestBodySpecification::with_image(
+    Image::with_repository("serai-dev-ethereum").pull_policy(PullPolicy::Never),
+  )
+  .set_start_policy(StartPolicy::Strict)
+  .set_publish_all_ports(true);
+  (composition, ETH_PORT)
+ const AMOUNT: u64 = 10000
+        let mut tx = Transaction {
+          version: Version(2),
+          lock_time: LockTime::ZERO,
+          input: vec![TxIn {
+            previous_output: OutPoint { txid: input_tx.compute_txid(), vout: 0 },
+            script_sig: Script::new().into(),
+            sequence: Sequence(u32::MAX),
+            witness: Witness::default(),
+let mut data = vec![];
+        if let Some(instruction) = instruction {
+          data.push(Shorthand::Raw(RefundableInInstruction { origin: None, instruction }).encode());
+        curve25519-dalek = "4"
+dalek-ff-group = { path = "../../crypto/dalek-ff-group", default-features = false }
+ciphersuite = { path = "../../crypto/ciphersuite", default-features = false }
+ciphersuite-kp256 = { path = "../../crypto/ciphersuite/kp256", default-features = false }
+dkg = { path = "../../crypto/dkg", default-features = false }
+
+bitcoin-serai = { path = "../../networks/bitcoin" }
+max_width = 100
+# Let the developer decide based on the 100 char line limit
+use_small_heuristics = "Max"
+"crypto/transcript",
+
+  "crypto/ff-group-tests",
+  "crypto/dalek-ff-group",
+  "crypto/ed448",
+  "crypto/ciphersuite",
+channel = "1.89"
+targets = ["wasm32v1-none"]
+profile = "minimal"
+components = ["rust-src", "rustfmt", "clippy"]
+license = "MIT"
+repository = "https://github.com/serai-dex/serai/tree/develop/common/patchable-async-sleep"
+authors = ["Luke Parker <lukeparker5132@gmail.com>"]
+keywords = ["async", "sleep", "tokio", "smol", "async-std"]
+edition = "2026
+"
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+
+[lints]
+workspace = true
+
+[dependencies]
+tokio = { version = "1", default-features = false, features = [ "time"] }
+unsafe impl<T: GlobalAlloc> GlobalAlloc for ZeroizingAlloc<T> {
+  unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
+    self.0.alloc(layout)
+use std::time::Instant;
+
+use rand_core::OsRng;
+
+use zeroize::Zeroize;
+
+use ff::{Field, PrimeFieldBits};
+use group::Group;
+
+use k256::ProjectivePoint;
+use dalek_ff_group::EdwardsPoint;
+
+use crate::{straus, straus_vartime, pippenger, pippenger_vartime, multiexp, multiexp_vartime};
+
+#[cfg(feature = "batch")]
+mod batch;
+#[cfg(feature = "batch")]
+use batch::test_batch;
+
+#[allow(dead_code)]
+fn benchmark_internal<G: Zeroize + Group<Scalar: Zeroize + PrimeFieldBits>>(straus_bool: bool) {
+  let runs: usize = 20;
+
+  let mut start = 0;
+  let mut increment: usize = 5;
+  let mut total: usize = 250;
+  let mut current = 2;
+
+  if !straus_bool {
+    start = 100;
+    increment = 25;
+    total = 1000;
+    current = 4;
+  };
+
+  let mut pairs = Vec::with_capacity(total);
+  let mut sum = G::identity();
+
+  for _ in 0 .. start {
+    pairs.push((G::Scalar::random(&mut OsRng), G::generator() * G::Scalar::random(&mut OsRng)));
+    sum += pairs[pairs.len() - 1].1 * pairs[pairs.len() - 1].0;
+  }
+
+  for _ in 0 .. (total / increment) {
+    for _ in 0 .. increment {
+      pairs.push((G::Scalar::random(&mut OsRng), G::generator() * G::Scalar::random(&mut OsRng)));
+      sum += pairs[pairs.len() - 1].1 * pairs[pairs.len() - 1].0;
+    }
+
+    let now = Instant::now();
+    for _ in 0 .. runs {
+      if straus_bool {
+        assert_eq!(straus(&pairs, current), sum);
+      } else {
+        assert_eq!(pippenger(&pairs, current), sum);
+      }
+    }
+    let current_per = now.elapsed().as_micros() / u128::try_from(pairs.len()).unwrap();
+
+    let now = Instant::now();
+    for _ in 0 .. runs {
+      if straus_bool {
+        assert_eq!(straus(&pairs, current + 1), sum);
+      } else {
+        assert_eq!(pippenger(&pairs, current + 1), sum);
+      }
+    }
+    let next_per = now.elapsed().as_micros() / u128::try_from(pairs.len()).unwrap();
+
+    if next_per < current_per {
+      current += 1;
+      println!(
+        "{} {} is more efficient at {} with {}µs per",
+        if straus_bool { "Straus" } else { "Pippenger" },
+        current,
+        pairs.len(),
+        next_per
+      );
+      if current >= 8 {
+        return;
+      }
+    }
+  }
+}
+
+fn test_multiexp<G: Zeroize + Group<Scalar: Zeroize + PrimeFieldBits>>() {
+  let test = |pairs: &[_], sum| {
+    // These should automatically determine the best algorithm
+    assert_eq!(multiexp(pairs), sum);
+    assert_eq!(multiexp_vartime(pairs), sum);
+
+    // Also explicitly test straus/pippenger for each bit size
+    if !pairs.is_empty() {
+      for window in 1 .. 8 {
+        assert_eq!(straus(pairs, window), sum);
+        assert_eq!(straus_vartime(pairs, window), sum);
+        assert_eq!(pippenger(pairs, window), sum);
+        assert_eq!(pippenger_vartime(pairs, window), sum);
+      }
+    }
+  };
+
+  // Test an empty multiexp is identity
+  test(&[], G::identity());
+
+  // Test an multiexp of identity/zero elements is identity
+  test(&[(G::Scalar::ZERO, G::generator())], G::identity());
+  test(&[(G::Scalar::ONE, G::identity())], G::identity());
+
+  // Test a variety of multiexp sizes
+  let mut pairs = Vec::with_capacity(1000);
+  let mut sum = G::identity();
+  for _ in 0 .. 10 {
+    // Test a multiexp of a single item
+    // On successive loop iterations, this will test a multiexp with an odd number of pairs
+    pairs.push((G::Scalar::random(&mut OsRng), G::generator() * G::Scalar::random(&mut OsRng)));
+    sum += pairs[pairs.len() - 1].1 * pairs[pairs.len() - 1].0;
+    test(&pairs, sum);
+
+    for _ in 0 .. 100 {
+      pairs.push((G::Scalar::random(&mut OsRng), G::generator() * G::Scalar::random(&mut OsRng)));
+      sum += pairs[pairs.len() - 1].1 * pairs[pairs.len() - 1].0;
+    }
+    test(&pairs, sum);
+  }
+}
+
+#[test]
+fn test_secp256k1() {
+  test_multiexp::<ProjectivePoint>();
+  #[cfg(feature = "batch")]
+  test_batch::<ProjectivePoint>();
+}
+
+#[test]
+fn test_ed25519() {
+  test_multiexp::<EdwardsPoint>();
+  #[cfg(feature = "batch")]
+  test_batch::<EdwardsPoint>();
+}
+
+#[ignore]
+#[test]
+fn benchmark() {
+  // Activate the processor's boost clock
+  for _ in 0 .. 30 {
+    test_multiexp::<ProjectivePoint>();
+  }
+
+  benchmark_internal::<ProjectivePoint>(true);
+  benchmark_internal::<ProjectivePoint>(false);
+
+  benchmark_internal::<EdwardsPoint>(true);
+  benchmark_internal::<EdwardsPoint>(false);
+}
+#![cfg_attr(docsrs, feature(doc_cfg))]
+#![doc = include_str!("../README.md")]
+#![cfg_attr(not(feature = "std"), no_std)]
+
+#[cfg(not(feature = "std"))]
+#[macro_use]
+extern crate alloc;
+#[allow(unused_imports)]
+use std_shims::prelude::*;
+use std_shims::vec::Vec;
+
+use zeroize::Zeroize;
+
+use ff::PrimeFieldBits;
+use group::Group;
+
+mod straus;
+use straus::*;
+
+mod pippenger;
+use pippenger::*;
+
+#[cfg(feature = "batch")]
+mod batch;
+#[cfg(feature = "batch")]
+pub use batch::BatchVerifier;
+
+#[cfg(test)]
+mod tests;
+
+// Use black_box when possible
+#[rustversion::since(1.66)]
+use core::hint::black_box;
+#[rustversion::before(1.66)]
+fn black_box<T>(val: T) -> T {
+  val
+}
+
+fn u8_from_bool(bit_ref: &mut bool) -> u8 {
+  let bit_ref = black_box(bit_ref);
+
+  let mut bit = black_box(*bit_ref);
+  #[allow(clippy::cast_lossless)]
+  let res = black_box(bit as u8);
+  bit.zeroize();
+  debug_assert!((res | 1) == 1);
+
+  bit_ref.zeroize();
+  res
+}
+
+// Convert scalars to `window`-sized bit groups, as needed to index a table
+// This algorithm works for `window <= 8`
+pub(crate) fn prep_bits<G: Group<Scalar: PrimeFieldBits>>(
+  pairs: &[(G::Scalar, G)],
+  window: u8,
+) -> Vec<Vec<u8>> {
+  let w_usize = usize::from(window);
+
+  let mut groupings = vec![];
+  for pair in pairs {
+    let p = groupings.len();
+    let mut bits = pair.0.to_le_bits();
+    groupings.push(vec![0; bits.len().div_ceil(w_usize)]);
+
+    for (i, mut bit) in bits.iter_mut().enumerate() {
+      let mut bit = u8_from_bool(&mut bit);
+      groupings[p][i / w_usize] |= bit << (i % w_usize);
+      bit.zeroize();
+    }
+  }
+
+  groupings
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+enum Algorithm {
+  Null,
+  Single,
+  Straus(u8),
+  Pippenger(u8),
+}
+
+/*
+Release (with runs 20, so all of these are off by 20x):
+
+k256
+Straus 3 is more efficient at 5 with 678µs per
+Straus 4 is more efficient at 10 with 530µs per
+Straus 5 is more efficient at 35 with 467µs per
+
+Pippenger 5 is more efficient at 125 with 431µs per
+Pippenger 6 is more efficient at 275 with 349µs per
+Pippenger 7 is more efficient at 375 with 360µs per
+
+dalek
+Straus 3 is more efficient at 5 with 519µs per
+Straus 4 is more efficient at 10 with 376µs per
+Straus 5 is more efficient at 170 with 330µs per
+
+Pippenger 5 is more efficient at 125 with 305µs per
+Pippenger 6 is more efficient at 275 with 250µs per
+Pippenger 7 is more efficient at 450 with 205µs per
+Pippenger 8 is more efficient at 800 with 213µs per
+
+Debug (with runs 5, so...):
+
+k256
+Straus 3 is more efficient at 5 with 2532µs per
+Straus 4 is more efficient at 10 with 1930µs per
+Straus 5 is more efficient at 80 with 1632µs per
+
+Pippenger 5 is more efficient at 150 with 1441µs per
+Pippenger 6 is more efficient at 300 with 1235µs per
+Pippenger 7 is more efficient at 475 with 1182µs per
+Pippenger 8 is more efficient at 625 with 1170µs per
+
+dalek:
+Straus 3 is more efficient at 5 with 971µs per
+Straus 4 is more efficient at 10 with 782µs per
+Straus 5 is more efficient at 75 with 778µs per
+Straus 6 is more efficient at 165 with 867µs per
+
+Pippenger 5 is more efficient at 125 with 677µs per
+Pippenger 6 is more efficient at 250 with 655µs per
+Pippenger 7 is more efficient at 475 with 500µs per
+Pippenger 8 is more efficient at 875 with 499µs per
+*/
+fn algorithm(len: usize) -> Algorithm {
+  #[cfg(not(debug_assertions))]
+  if len == 0 {
+    Algorithm::Null
+  } else if len == 1 {
+    Algorithm::Single
+  } else if len < 10 {
+    // Straus 2 never showed a performance benefit, even with just 2 elements
+    Algorithm::Straus(3)
+  } else if len < 20 {
+    Algorithm::Straus(4)
+  } else if len < 50 {
+    Algorithm::Straus(5)
+  } else if len < 100 {
+    Algorithm::Pippenger(4)
+  } else if len < 125 {
+    Algorithm::Pippenger(5)
+  } else if len < 275 {
+    Algorithm::Pippenger(6)
+  } else if len < 400 {
+    Algorithm::Pippenger(7)
+  } else {
+    Algorithm::Pippenger(8)
+  }
+
+  #[cfg(debug_assertions)]
+  if len == 0 {
+    Algorithm::Null
+  } else if len == 1 {
+    Algorithm::Single
+  } else if len < 10 {
+    Algorithm::Straus(3)
+  } else if len < 80 {
+    Algorithm::Straus(4)
+  } else if len < 100 {
+    Algorithm::Straus(5)
+  } else if len < 125 {
+    Algorithm::Pippenger(4)
+  } else if len < 275 {
+    Algorithm::Pippenger(5)
+  } else if len < 475 {
+    Algorithm::Pippenger(6)
+  } else if len < 750 {
+    Algorithm::Pippenger(7)
+  } else {
+    Algorithm::Pippenger(8)
+  }
+}
+
+/// Performs a multiexponentiation, automatically selecting the optimal algorithm based on the
+/// amount of pairs.
+pub fn multiexp<G: Zeroize + Group<Scalar: Zeroize + PrimeFieldBits>>(
+  pairs: &[(G::Scalar, G)],
+) -> G {
+  match algorithm(pairs.len()) {
+    Algorithm::Null => Group::identity(),
+    Algorithm::Single => pairs[0].1 * pairs[0].0,
+    // These functions panic if called without any pairs
+    Algorithm::Straus(window) => straus(pairs, window),
+    Algorithm::Pippenger(window) => pippenger(pairs, window),
+  }
+}
+
+/// Performs a multiexponentiation in variable time, automatically selecting the optimal algorithm
+/// based on the amount of pairs.
+pub fn multiexp_vartime<G: Group<Scalar: PrimeFieldBits>>(pairs: &[(G::Scalar, G)]) -> G {
+  match algorithm(pairs.len()) {
+    Algorithm::Null => Group::identity(),
+    Algorithm::Single => pairs[0].1 * pairs[0].0,
+    Algorithm::Straus(window) => straus_vartime(pairs, window),
+    Algorithm::Pippenger(window) => pippenger_vartime(pairs, window),
+  }
+use zeroize::Zeroize;
+
+use ff::PrimeFieldBits;
+use group::Group;
+
+use crate::prep_bits;
+
+// Pippenger's algorithm for multiexponentiation, as published in the SIAM Journal on Computing
+// DOI: 10.1137/0209022
+pub(crate) fn pippenger<G: Zeroize + Group<Scalar: PrimeFieldBits>>(
+  pairs: &[(G::Scalar, G)],
+  window: u8,
+) -> G {
+  let mut bits = prep_bits(pairs, window);
+
+  let mut res = G::identity();
+  for n in (0 .. bits[0].len()).rev() {
+    if n != (bits[0].len() - 1) {
+      for _ in 0 .. window {
+        res = res.double();
+      }
+    }
+
+    let mut buckets = vec![G::identity(); 2_usize.pow(window.into())];
+    for p in 0 .. bits.len() {
+      buckets[usize::from(bits[p][n])] += pairs[p].1;
+    }
+
+    let mut intermediate_sum = G::identity();
+    for b in (1 .. buckets.len()).rev() {
+      intermediate_sum += buckets[b];
+      res += intermediate_sum;
+    }
+
+    buckets.zeroize();
+  }
+
+  bits.zeroize();
+  res
+}
+
+pub(crate) fn pippenger_vartime<G: Group<Scalar: PrimeFieldBits>>(
+  pairs: &[(G::Scalar, G)],
+  window: u8,
+) -> G {
+  let bits = prep_bits(pairs, window);
+
+  let mut res = G::identity();
+  for n in (0 .. bits[0].len()).rev() {
+    if n != (bits[0].len() - 1) {
+      for _ in 0 .. window {
+        res = res.double();
+      }
+    }
+
+    // Use None to represent identity since is_none is likely faster than is_identity
+    let mut buckets = vec![None; 2_usize.pow(window.into())];
+    for p in 0 .. bits.len() {
+      let nibble = usize::from(bits[p][n]);
+      if nibble != 0 {
+        if let Some(bucket) = buckets[nibble].as_mut() {
+          *bucket += pairs[p].1;
+        } else {
+          buckets[nibble] = Some(pairs[p].1);
+        }
+      }
+    }
+
+    let mut intermediate_sum = None;
+    for b in (1 .. buckets.len()).rev() {
+      if let Some(bucket) = buckets[b].as_ref() {
+        if let Some(intermediate_sum) = intermediate_sum.as_mut() {
+          *intermediate_sum += bucket;
+        } else {
+          intermediate_sum = Some(*bucket);
+        }
+      }
+
+      if let Some(intermediate_sum) = intermediate_sum.as_ref() {
+        res += intermediate
+use std_shims::vec::Vec;
+
+use zeroize::Zeroize;
+
+use ff::PrimeFieldBits;
+use group::Group;
+
+use crate::prep_bits;
+
+// Create tables for every included point of size 2^window
+fn prep_tables<G: Group>(pairs: &[(G::Scalar, G)], window: u8) -> Vec<Vec<G>> {
+  let mut tables = Vec::with_capacity(pairs.len());
+  for pair in pairs {
+    let p = tables.len();
+    tables.push(vec![G::identity(); 2_usize.pow(window.into())]);
+    let mut accum = G::identity();
+    for i in 1 .. tables[p].len() {
+      accum += pair.1;
+      tables[p][i] = accum;
+    }
+  }
+  tables
+}
+
+// Straus's algorithm for multiexponentiation, as published in The American Mathematical Monthly
+// DOI: 10.2307/2310929
+pub(crate) fn straus<G: Zeroize + Group<Scalar: PrimeFieldBits>>(
+  pairs: &[(G::Scalar, G)],
+  window: u8,
+) -> G {
+  let mut groupings = prep_bits(pairs, window);
+  let mut tables = prep_tables(pairs, window);
+
+  let mut res = G::identity();
+  for b in (0 .. groupings[0].len()).rev() {
+    if b != (groupings[0].len() - 1) {
+      for _ in 0 .. window {
+        res = res.double();
+      }
+    }
+
+    for s in 0 .. tables.len() {
+      res += tables[s][usize::from(groupings[s][b])];
+    }
+  }
+
+  groupings.zeroize();
+  tables.zeroize();
+  res
+}
+
+pub(crate) fn straus_vartime<G: Group<Scalar: PrimeFieldBits>>(
+  pairs: &[(G::Scalar, G)],
+  window: u8,
+) -> G {
+  let groupings = prep_bits(pairs, window);
+  let tables = prep_tables(pairs, window);
+
+  let mut res: Option<G> = None;
+  for b in (0 .. groupings[0].len()).rev() {
+    if b != (groupings[0].len() - 1) {
+      for _ in 0 .. window {
+        res = res.map(|res| res.double());
+      }
+    }
+
+    for s in 0 .. tables.len() {
+      if groupings[s][b] != 0 {
+        if let Some(res) = res.as_mut() {
+          *res += tables[s][usize::from(groupings[s][b])];
+        } else {
+          res = Some(tables[s][usize::from(groupings[s][b])]);
+  res.unwrap_or_else(G::identity)
+use core::ops::Deref;
+
+use zeroize::Zeroizing;
+use rand_core::OsRng;
+
+use dalek_ff_group::Ed25519;
+use ciphersuite::{
+  group::{ff::Field, Group},
+  Ciphersuite,
+};
+use multiexp::BatchVerifier;
+
+use crate::SchnorrSignature;
+#[cfg(feature = "aggregate")]
+use crate::aggregate::{SchnorrAggregator, SchnorrAggregate};
+
+mod rfc8032;
+
+pub(crate) fn sign<C: Ciphersuite>() {
+  let private_key = Zeroizing::new(C::random_nonzero_F(&mut OsRng));
+  let nonce = Zeroizing::new(C::random_nonzero_F(&mut OsRng));
+  let challenge = C::random_nonzero_F(&mut OsRng); // Doesn't bother to craft an HRAm
+  assert!(SchnorrSignature::<C>::sign(&private_key, nonce, challenge)
+    .verify(C::generator() * private_key.deref(), challenge));
+}
+
+// The above sign function verifies signing works
+// This verifies invalid signatures don't pass, using zero signatures, which should effectively be
+// random
+pub(crate) fn verify<C: Ciphersuite>() {
+  assert!(!SchnorrSignature::<C> { R: C::G::identity(), s: C::F::ZERO }
+    .verify(C::generator() * C::random_nonzero_F(&mut OsRng), C::random_nonzero_F(&mut OsRng)));
+}
+
+pub(crate) fn batch_verify<C: Ciphersuite>() {
+  // Create 5 signatures
+  let mut keys = vec![];
+  let mut challenges = vec![];
+  let mut sigs = vec![];
+  for i in 0 .. 5 {
+    keys.push(Zeroizing::new(C::random_nonzero_F(&mut OsRng)));
+    challenges.push(C::random_nonzero_F(&mut OsRng));
+    sigs.push(SchnorrSignature::<C>::sign(
+      &keys[i],
+      Zeroizing::new(C::random_nonzero_F(&mut OsRng)),
+      challenges[i],
+    ));
+  }
+
+  // Batch verify
+  {
+    let mut batch = BatchVerifier::new(5);
+    for (i, sig) in sigs.iter().enumerate() {
+      sig.batch_verify(&mut OsRng, &mut batch, i, C::generator() * keys[i].deref(), challenges[i]);
+    }
+    batch.verify_vartime_with_vartime_blame().unwrap();
+  }
+
+  // Shift 1 from s from one to another and verify it fails
+  // This test will fail if unique factors aren't used per-signature, hence its inclusion
+  {
+    let mut batch = BatchVerifier::new(5);
+    for (i, mut sig) in sigs.clone().drain(..).enumerate() {
+      if i == 1 {
+        sig.s += C::F::ONE;
+      }
+      if i == 2 {
+        sig.s -= C::F::ONE;
+      }
+      sig.batch_verify(&mut OsRng, &mut batch, i, C::generator() * keys[i].deref(), challenges[i]);
+    }
+    if let Err(blame) = batch.verify_vartime_with_vartime_blame() {
+      assert!((blame == 1) || (blame == 2));
+    } else {
+      panic!("Batch verification considered malleated signatures valid");
+    }
+  }
+}
+
+#[cfg(feature = "aggregate")]
+pub(crate) fn aggregate<C: Ciphersuite>() {
+  const DST: &[u8] = b"Schnorr Aggregator Test";
+
+  // Create 5 signatures
+  let mut keys = vec![];
+  let mut challenges = vec![];
+  let mut aggregator = SchnorrAggregator::<C>::new(DST);
+  for i in 0 .. 5 {
+    keys.push(Zeroizing::new(C::random_nonzero_F(&mut OsRng)));
+    // In practice, this MUST be a secure challenge binding to the nonce, key, and any message
+    challenges.push(C::random_nonzero_F(&mut OsRng));
+    aggregator.aggregate(
+      challenges[i],
+      SchnorrSignature::<C>::sign(
+        &keys[i],
+        Zeroizing::new(C::random_nonzero_F(&mut OsRng)),
+        challenges[i],
+      ),
+    );
+  }
+
+  let aggregate = aggregator.complete().unwrap();
+  let aggregate =
+    SchnorrAggregate::<C>::read::<&[u8]>(&mut aggregate.serialize().as_ref()).unwrap();
+  assert!(aggregate.verify(
+    DST,
+    keys
+      .iter()
+      .map(|key| C::generator() * key.deref())
+      .zip(challenges.iter().copied())
+      .collect::<Vec<_>>()
+      .as_ref(),
+  ));
+}
+
+#[test]
+fn test() {
+  sign::<Ed25519>();
+  verify::<Ed25519>();
+  batch_verify::<Ed25519>();
+  #[cfg(feature = "aggregate")]
+  aggregate::<Ed25519>();
+// RFC 8032 Ed25519 test vectors
+// The s = r + cx format modernly used for Schnorr signatures was popularized by EdDSA
+// While not all RFC 8032 signatures will work with this library, any canonical ones will, and
+// these vectors are canonical
+
+use sha2::{Digest, Sha512};
+
+use dalek_ff_group::{Scalar, Ed25519};
+use ciphersuite::{group::GroupEncoding, Ciphersuite};
+
+use crate::SchnorrSignature;
+
+// Public key, message, signature
+#[rustfmt::skip]
+const VECTORS: [(&str, &str, &str); 5] = [
+  (
+    "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a",
+    "",
+    "e5564300c360ac729086e2cc806e828a84877f1eb8e5d974d873e065224901555fb8821590a33bacc61e39701cf9b46bd25bf5f0595bbe24655141438e7a100b"
+  ),
+
+  (
+    "3d4017c3e843895a92b70aa74d1b7ebc9c982ccf2ec4968cc0cd55f12af4660c",
+    "72",
+    "92a009a9f0d4cab8720e820b5f642540a2b27b5416503f8fb3762223ebdb69da085ac1e43e15996e458f3613d0f11d8c387b2eaeb4302aeeb00d291612bb0c00"
+  ),
+
+  (
+    "fc51cd8e6218a1a38da47ed00230f0580816ed13ba3303ac5deb911548908025",
+    "af82",
+    "6291d657deec24024827e69c3abe01a30ce548a284743a445e3680d7db5ac3ac18ff9b538d16f290ae67f760984dc6594a7c15e9716ed28dc027beceea1ec40a"
+  ),
+
+  (
+    "278117fc144c72340f67d0f2316e8386ceffbf2b2428c9c51fef7c597f1d426e",
+    "08b8b2b733424243760fe426a4b54908632110a66c2f6591eabd3345e3e4eb98fa6e264bf09efe12ee50f8f54e9f77b1e355f6c50544e23fb1433ddf73be84d879de7c0046dc4996d9e773f4bc9efe5738829adb26c81b37c93a1b270b20329d658675fc6ea534e0810a4432826bf58c941efb65d57a338bbd2e26640f89ffbc1a858efcb8550ee3a5e1998bd177e93a7363c344fe6b199ee5d02e82d522c4feba15452f80288a821a579116ec6dad2b3b310da903401aa62100ab5d1a36553e06203b33890cc9b832f79ef80560ccb9a39ce767967ed628c6ad573cb116dbefefd75499da96bd68a8a97b928a8bbc103b6621fcde2beca1231d206be6cd9ec7aff6f6c94fcd7204ed3455c68c83f4a41da4af2b74ef5c53f1d8ac70bdcb7ed185ce81bd84359d44254d95629e9855a94a7c1958d1f8ada5d0532ed8a5aa3fb2d17ba70eb6248e594e1a2297acbbb39d502f1a8c6eb6f1ce22b3de1a1f40cc24554119a831a9aad6079cad88425de6bde1a9187ebb6092cf67bf2b13fd65f27088d78b7e883c8759d2c4f5c65adb7553878ad575f9fad878e80a0c9ba63bcbcc2732e69485bbc9c90bfbd62481d9089beccf80cfe2df16a2cf65bd92dd597b0707e0917af48bbb75fed413d238f5555a7a569d80c3414a8d0859dc65a46128bab27af87a71314f318c782b23ebfe808b82b0ce26401d2e22f04d83d1255dc51addd3b75a2b1ae0784504df543af8969be3ea7082ff7fc9888c144da2af58429ec96031dbcad3dad9af0dcbaaaf268cb8fcffead94f3c7ca495e056a9b47acdb751fb73e666c6c655ade8297297d07ad1ba5e43f1bca32301651339e22904cc8c42f58c30c04aafdb038dda0847dd988dcda6f3bfd15c4b4c4525004aa06eeff8ca61783aacec57fb3d1f92b0fe2fd1a85f6724517b65e614ad6808d6f6ee34dff7310fdc82aebfd904b01e1dc54b2927094b2db68d6f903b68401adebf5a7e08d78ff4ef5d63653a65040cf9bfd4aca7984a74d37145986780fc0b16ac451649de6188a7dbdf191f64b5fc5e2ab47b57f7f7276cd419c17a3ca8e1b939ae49e488acba6b965610b5480109c8b17b80e1b7b750dfc7598d5d5011fd2dcc5600a32ef5b52a1ecc820e308aa342721aac0943bf6686b64b2579376504ccc493d97e6aed3fb0f9cd71a43dd497f01f17c0e2cb3797aa2a2f256656168e6c496afc5fb93246f6b1116398a346f1a641f3b041e989f7914f90cc2c7fff357876e506b50d334ba77c225bc307ba537152f3f1610e4eafe595f6d9d90d11faa933a15ef1369546868a7f3a45a96768d40fd9d03412c091c6315cf4fde7cb68606937380db2eaaa707b4c4185c32eddcdd306705e4dc1ffc872eeee475a64dfac86aba41c0618983f8741c5ef68d3a101e8a3b8cac60c905c15fc910840b94c00a0b9d0",
+    "0aab4c900501b3e24d7cdf4663326a3a87df5e4843b2cbdb67cbf6e460fec350aa5371b1508f9f4528ecea23c436d94b5e8fcd4f681e30a6ac00a9704a188a03"
+  ),
+
+  (
+    "ec172b93ad5e563bf4932c70e1245034c35467ef2efd4d64ebf819683467e2bf",
+    "ddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a2192992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f",
+    "dc2a4459e7369633a52b1bf277839a00201009a3efbf3ecb69bea2186c26b58909351fc9ac90b3ecfdfbc7c66431e0303dca179c138ac17ad9bef1177331a704"
+  ),
+];
+
+#[test]
+fn test_rfc8032() {
+  for vector in VECTORS {
+    let key = Ed25519::read_G::<&[u8]>(&mut hex::decode(vector.0).unwrap().as_ref()).unwrap();
+    let sig =
+      SchnorrSignature::<Ed25519>::read::<&[u8]>(&mut hex::decode(vector.2).unwrap().as_ref())
+        .unwrap();
+    let hram = Sha512::new_with_prefix(
+      [sig.R.to_bytes().as_ref(), &key.to_bytes(), &hex::decode(vector.1).unwrap()].concat(),
+    );
+    assert!(sig.verify(key, Scalar::from_hash(hram)));
+  }
+ /// Aggregate a signature.
+  pub fn aggregate(&mut self, challenge: C::F, sig: SchnorrSignature<C>) {
+    self.digest.append_message(b"challenge", challenge.to_repr());
+    self.sigs.push(sig);
+  }
+
+  /// Complete aggregation, returning None if none were aggregated.
+  pub fn complete(mut self) -> Option<SchnorrAggregate<C>> {
+    if self.sigs.is_empty() {
+      return None;
+    }
+
+    let mut aggregate = SchnorrAggregate { Rs: Vec::with_capacity(self.sigs.len()), s: C::F::ZERO };
+    for i in 0 .. self.sigs.len() {
+      aggregate.Rs.push(self.sigs[i].R);
+      aggregate.s += self.sigs[i].s * weight::<_, C::F>(&mut self.digest);
+    }
+    Some(aggregate)
+  impl<C: Ciphersuite> SchnorrSignature<C> {
+  /// Read a SchnorrSignature from something implementing Read.
+  pub fn read<R: Read>(reader: &mut R) -> io::Result<Self> {
+    Ok(SchnorrSignature { R: C::read_G(reader)?, s: C::read_F(reader)? })
+  }
+
+  /// Write a SchnorrSignature to something implementing Read.
+  pub fn write<W: Write>(&self, writer: &mut W) -> io::Result<()> {
+    writer.write_all(self.R.to_bytes().as_ref())?;
+    writer.write_all(self.s.to_repr().as_ref())
+  }
+
+  /// Serialize a SchnorrSignature, returning a `Vec<u8>`.
+  pub fn serialize(&self) -> Vec<u8> {
+    let mut buf = vec![];
+    self.write(&mut buf).unwrap();
+    buf
+  }
+
+  /// Sign a Schnorr signature with the given nonce for the specified challenge.
+  ///
+  /// This challenge must be properly crafted, which means being binding to the public key, nonce,
+  /// and any message. Failure to do so will let a malicious adversary to forge signatures for
+  /// different keys/messages.
+  #[allow(clippy::needless_pass_by_value)] // Prevents further-use of this single-use value
+  pub fn sign(
+    private_key: &Zeroizing<C::F>,
+    nonce: Zeroizing<C::F>,
+    challenge: C::F,
+  ) -> SchnorrSignature<C> {
+    SchnorrSignature {
+      // Uses deref instead of * as * returns C::F yet deref returns &C::F, preventing a copy
+      R: C::generator() * nonce.deref(),
+      s: (challenge * private_key.deref()) + nonce.deref(),
+    }
+  }
+
+  /// Return the series of pairs whose products sum to zero for a valid signature.
+  /// This is intended to be used with a multiexp.
+  pub fn batch_statements(&self, public_key: C::G, challenge: C::F) -> [(C::F, C::G); 3] {
+    // s = r + ca
+    // sG == R + cA
+    // R + cA - sG == 0
+    [
+      // R
+      (C::F::ONE, self.R),
+      // cA
+      (challenge, public_key),
+      // -sG
+      (-self.s, C::generator()),
+    ]
+  }
+
+  /// Verify a Schnorr signature for the given key with the specified challenge.
+  ///
+  /// This challenge must be properly crafted, which means being binding to the public key, nonce,
+  /// and any message. Failure to do so will let a malicious adversary to forge signatures for
+  /// different keys/messages.
+  #[must_use]
+  pub fn verify(&self, public_key: C::G, challenge: C::F) -> bool {
+    multiexp_vartime(&self.batch_statements(public_key, challenge)).is_identity().into()
+  }
+
+  /// Queue a signature for batch verification.
+  ///
+  /// This challenge must be properly crafted, which means being binding to the public key, nonce,
+  /// and any message. Failure to do so will let a malicious adversary to forge signatures for
+  /// different keys/messages.
+  pub fn batch_verify<R: RngCore + CryptoRng, I: Copy + Zeroize>(
+    &self,
+    rng: &mut R,
+    batch: &mut BatchVerifier<I, C::G>,
+    id: I,
+    public_key: C::G,
+    challenge: C::F,
+  ) {
+    batch.queue(rng, id, self.batch_statements(public_key, challenge));
+  }
+impl<C: Ciphersuite> SchnorrSignature<C> {
+  /// Read a SchnorrSignature from something implementing Read.
+  pub fn read<R: Read>(reader: &mut R) -> io::Result<Self> {
+    Ok(SchnorrSignature { R: C::read_G(reader)?, s: C::read_F(reader)? })
+  }
+
+  /// Write a SchnorrSignature to something implementing Read.
+  pub fn write<W: Write>(&self, writer: &mut W) -> io::Result<()> {
+    writer.write_all(self.R.to_bytes().as_ref())?;
+    writer.write_all(self.s.to_repr().as_ref())
+  }
+
+  /// Serialize a SchnorrSignature, returning a `Vec<u8>`.
+  pub fn serialize(&self) -> Vec<u8> {
+    let mut buf = vec![];
+    self.write(&mut buf).unwrap();
+    buf
+  }
+
+  /// Sign a Schnorr signature with the given nonce for the specified challenge.
+  ///
+  /// This challenge must be properly crafted, which means being binding to the public key, nonce,
+  /// and any message. Failure to do so will let a malicious adversary to forge signatures for
+  /// different keys/messages.
+  #[allow(clippy::needless_pass_by_value)] // Prevents further-use of this single-use value
+  pub fn sign(
+    private_key: &Zeroizing<C::F>,
+    nonce: Zeroizing<C::F>,
+    challenge: C::F,
+  ) -> SchnorrSignature<C> {
+    SchnorrSignature {
+      // Uses deref instead of * as * returns C::F yet deref returns &C::F, preventing a copy
+      R: C::generator() * nonce.deref(),
+      s: (challenge * private_key.deref()) + nonce.deref(),
+    }
+  }
+
+  /// Return the series of pairs whose products sum to zero for a valid signature.
+  /// This is intended to be used with a multiexp.
+  pub fn batch_statements(&self, public_key: C::G, challenge: C::F) -> [(C::F, C::G); 3] {
+    // s = r + ca
+    // sG == R + cA
+    // R + cA - sG == 0
+    [
+      // R
+      (C::F::ONE, self.R),
+      // cA
+      (challenge, public_key),
+      // -sG
+      (-self.s, C::generator()),
+    ]
+  }
+
+  /// Verify a Schnorr signature for the given key with the specified challenge.
+  ///
+  /// This challenge must be properly crafted, which means being binding to the public key, nonce,
+  /// and any message. Failure to do so will let a malicious adversary to forge signatures for
+  /// different keys/messages.
+  #[must_use]
+  pub fn verify(&self, public_key: C::G, challenge: C::F) -> bool {
+    multiexp_vartime(&self.batch_statements(public_key, challenge)).is_identity().into()
+  }
+
+  /// Queue a signature for batch verification.
+  ///
+  /// This challenge must be properly crafted, which means being binding to the public key, nonce,
+  /// and any message. Failure to do so will let a malicious adversary to forge signatures for
+  /// different keys/messages.
+  pub fn batch_verify<R: RngCore + CryptoRng, I: Copy + Zeroize>(
+    &self,
+    rng: &mut R,
+    batch: &mut BatchVerifier<I, C::G>,
+    id: I,
+    public_key: C::G,
+    challenge: C::F,
+  ) {
+    batch.queue(rng, id, self.batch_statements(public_key, challenge));
+  }
+#![cfg_attr(docsrs, feature(doc_cfg))]
+#![doc = include_str!("../README.md")]
+#![no_std]
+
+#[allow(unused_imports)]
+use std_shims::prelude::*;
+
+use zeroize::Zeroize;
+
+use digest::{
+  typenum::{
+    consts::U32, marker_traits::NonZero, type_operators::IsGreaterOrEqual, operator_aliases::GrEq,
+  },
+  core_api::BlockSizeUser,
+  Digest, Output, HashMarker,
+};
+
+#[cfg(feature = "merlin")]
+mod merlin;
+#[cfg(feature = "merlin")]
+pub use crate::merlin::MerlinTranscript;
+
+/// Tests for a transcript.
+#[cfg(any(test, feature = "tests"))]
+pub mod tests;
+
+/// A transcript trait valid over a variety of transcript formats.
+pub trait Transcript: Send + Clone {
+  type Challenge: Send + Sync + Clone + AsRef<[u8]>;
+
+  /// Create a new transcript with the specified name.
+  fn new(name: &'static [u8]) -> Self;
+
+  /// Apply a domain separator to the transcript.
+  fn domain_separate(&mut self, label: &'static [u8]);
+
+  /// Append a message to the transcript.
+  fn append_message<M: AsRef<[u8]>>(&mut self, label: &'static [u8], message: M);
+
+  /// Produce a challenge.
+  ///
+  /// Implementors MUST update the transcript as it does so, preventing the same challenge from
+  /// being generated multiple times.
+  fn challenge(&mut self, label: &'static [u8]) -> Self::Challenge;
+
+  /// Produce a RNG seed.
+  ///
+  /// Helper function for parties needing to generate random data from an agreed upon state.
+  ///
+  /// Implementors MAY internally call the challenge function for the needed bytes, and accordingly
+  /// produce a transcript conflict between two transcripts, one which called challenge(label) and
+  /// one which called rng_seed(label) at the same point.
+  fn rng_seed(&mut self, label: &'static [u8]) -> [u8; 32];
+}
+
+#[derive(Clone, Copy)]
+enum DigestTranscriptMember {
+  Name,
+  Domain,
+  Label,
+  Value,
+  Challenge,
+  Continued,
+  Challenged,
+}
+
+impl DigestTranscriptMember {
+  fn as_u8(&self) -> u8 {
+    match self {
+      DigestTranscriptMember::Name => 0,
+      DigestTranscriptMember::Domain => 1,
+      DigestTranscriptMember::Label => 2,
+      DigestTranscriptMember::Value => 3,
+      DigestTranscriptMember::Challenge => 4,
+      DigestTranscriptMember::Continued => 5,
+      DigestTranscriptMember::Challenged => 6,
+    }
+  }
+}
+
+/// A trait defining cryptographic Digests with at least a 256-bit output size, assuming at least a
+/// 128-bit level of security accordingly.
+pub trait SecureDigest: Digest + HashMarker {}
+impl<D: Digest + HashMarker> SecureDigest for D
+where
+  // This just lets us perform the comparison
+  D::OutputSize: IsGreaterOrEqual<U32>,
+  // Perform the comparison and make sure it's true (not zero), meaning D::OutputSize is >= U32
+  // This should be U32 as it's length in bytes, not bits
+  GrEq<D::OutputSize, U32>: NonZero,
+{
+}
+
+/// A simple transcript format constructed around the specified hash algorithm.
+#[derive(Clone, Debug)]
+pub struct DigestTranscript<D: Send + Clone + SecureDigest>(D);
+
+impl<D: Send + Clone + SecureDigest> DigestTranscript<D> {
+  fn append(&mut self, kind: DigestTranscriptMember, value: &[u8]) {
+    self.0.update([kind.as_u8()]);
+    // Assumes messages don't exceed 16 exabytes
+    self.0.update(u64::try_from(value.len()).unwrap().to_le_bytes());
+    self.0.update(value);
+  }
+}
+
+impl<D: Send + Clone + SecureDigest> Transcript for DigestTranscript<D> {
+  type Challenge = Output<D>;
+
+  fn new(name: &'static [u8]) -> Self {
+    let mut res = DigestTranscript(D::new());
+    res.append(DigestTranscriptMember::Name, name);
+    res
+  }
+
+  fn domain_separate(&mut self, label: &'static [u8]) {
+    self.append(DigestTranscriptMember::Domain, label);
+  }
+
+  fn append_message<M: AsRef<[u8]>>(&mut self, label: &'static [u8], message: M) {
+    self.append(DigestTranscriptMember::Label, label);
+    self.append(DigestTranscriptMember::Value, message.as_ref());
+  }
+
+  fn challenge(&mut self, label: &'static [u8]) -> Self::Challenge {
+    self.append(DigestTranscriptMember::Challenge, label);
+    let mut cloned = self.0.clone();
+
+    // Explicitly fork these transcripts to prevent length extension attacks from being possible
+    // (at least, without the additional ability to remove a byte from a finalized hash)
+    self.0.update([DigestTranscriptMember::Continued.as_u8()]);
+    cloned.update([DigestTranscriptMember::Challenged.as_u8()]);
+    cloned.finalize()
+  }
+
+  fn rng_seed(&mut self, label: &'static [u8]) -> [u8; 32] {
+    let mut seed = [0; 32];
+    seed.copy_from_slice(&self.challenge(label)[.. 32]);
+    seed
+  }
+}
+
+// Digest doesn't implement Zeroize
+// Implement Zeroize for DigestTranscript by writing twice the block size to the digest in an
+// attempt to overwrite the internal hash state/any leftover bytes
+impl<D: Send + Clone + SecureDigest> Zeroize for DigestTranscript<D>
+where
+  D: BlockSizeUser,
+{
+  fn zeroize(&mut self) {
+    // Update in 4-byte chunks to reduce call quantity and enable word-level update optimizations
+    const WORD_SIZE: usize = 4;
+
+    // block_size returns the block_size in bytes
+    // Use a ceil div in case the block size isn't evenly divisible by our word size
+    let words = D::block_size().div_ceil(WORD_SIZE);
+    for _ in 0 .. (2 * words) {
+      self.0.update([255; WORD_SIZE]);
+    }
+
+    // Hopefully, the hash state is now overwritten to the point no data is recoverable
+    // These writes may be optimized out if they're never read
+    // Attempt to get them marked as read
+
+    fn mark_read<D: Send + Clone + SecureDigest>(transcript: &DigestTranscript<D>) {
+      // Just get a challenge from the state
+      let mut challenge = core::hint::black_box(transcript.0.clone().finalize());
+      challenge.as_mut().zeroize();
+    }
+
+    mark_read(self)
+  }
+}
+
+/// The recommended transcript, guaranteed to be secure against length-extension attacks.
+#[cfg(feature = "recommended")]
+pub type RecommendedTran
+pub struct MerlinTranscript(merlin::Transcript);
+// Merlin doesn't implement Debug so provide a stub which won't panic
+impl Debug for MerlinTranscript {
+  fn fmt(&self, fmt: &mut Formatter<'_>) -> Result<(), core::fmt::Error> {
+    fmt.debug_struct("MerlinTranscript").finish_non_exhaustive()
+#[test]
+fn test_digest() {
+  test_transcript::<crate::DigestTranscript<sha2::Sha256>>();
+  test_transcript::<crate::DigestTranscript<blake2::Blake2b512>>();
+  rb-fsevent (~> 0.10, >= 0.10.3)
+      rb-inotify (~> 0.9, >= 0.9.10)
+    mercenary (0.4.0)
+    pathutil (0.16.2)
+      forwardable-extended (~> 2.6)
+    public_suffix (6.0.1)
+    rake (13.2.1)
+    rb-fsevent (0.11.2)
+    rb-inotify (0.1
+PLATFORMS
+  x86_64-linux
+
+DEPENDENCIES
+  jekyll (~> 4.3.3)
+  just-the-docs (= 0.8.2)
+
+BUNDLED WITH
+   2.5.11
+title: Serai Documentation
+description: Documentation for the Serai protocol.
+theme: just-the-docs
+
+url: https://docs.serai.exchange
+
+callouts:
+  warning:
+    title: Warning
+    color: red
+
+  definition:
+    title: Definition
+    color: blue
